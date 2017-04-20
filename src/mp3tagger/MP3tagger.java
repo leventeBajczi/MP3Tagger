@@ -110,9 +110,10 @@ public class MP3tagger {
                         mp3File.setId3v2Tag(id3v2Tag);
                     }
                     String[] paths = f.getAbsolutePath().split("\\\\");
-                    if(mode.contains(MODE_ARTIST))id3v2Tag.setArtist(paths[paths.length-3]);
-                    if(mode.contains(MODE_ALBUM))id3v2Tag.setAlbum(paths[paths.length-2]);
-                    if(mode.contains(MODE_TITLE))id3v2Tag.setTitle(paths[paths.length-1].split(".mp3")[0]);
+                    System.out.println(id3v2Tag.getArtist());
+                    if(mode.contains(MODE_ARTIST) && id3v2Tag.getArtist() == null)id3v2Tag.setArtist(paths[paths.length-3]);
+                    if(mode.contains(MODE_ALBUM)  && id3v2Tag.getAlbum() == null)id3v2Tag.setAlbum(paths[paths.length-2]);
+                    if(mode.contains(MODE_TITLE) && id3v2Tag.getTitle() == null)id3v2Tag.setTitle(paths[paths.length-1].split(".mp3")[0]);
                     mp3File.save(path + ".new");
                     f.delete();
                     f = new File(path + ".new");
