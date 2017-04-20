@@ -19,7 +19,13 @@ public class MP3tagger {
     public static final int COMMAND_REMOVE = 1;
     
     public static void main(String[] args) {
-       mode = new ArrayList<>();
+      parseParams(args);
+      
+             
+    }
+
+    private static void parseParams(String[] args) {
+         mode = new ArrayList<>();
         
        if(args.length >= 1){
            switch(args[0]){
@@ -35,9 +41,7 @@ public class MP3tagger {
        }else{
            System.out.println("Please specify command.");
            exit(0);
-       }
-       
-       
+       }             
         
        if(args.length >= 2 && (file = new File(args[1])).isDirectory()){
            System.out.println("Using directory: " + file.getAbsolutePath());
@@ -67,8 +71,6 @@ public class MP3tagger {
            mode.add(MODE_ARTIST);
            mode.add(MODE_ALBUM);
        }              
-       
-             
     }
     
 }
