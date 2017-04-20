@@ -2,16 +2,13 @@ package mp3tagger;
 
 import com.mpatric.mp3agic.ID3v1;
 import com.mpatric.mp3agic.ID3v1Tag;
-import com.mpatric.mp3agic.InvalidDataException;
+import com.mpatric.mp3agic.ID3v2;
+import com.mpatric.mp3agic.ID3v24Tag;
 import com.mpatric.mp3agic.Mp3File;
-import com.mpatric.mp3agic.UnsupportedTagException;
 import java.io.File;
-import java.io.IOException;
 import static java.lang.System.exit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class MP3tagger {
 
@@ -29,15 +26,13 @@ public class MP3tagger {
     public static final int COMMAND_REMOVE = 1;
     
     public static void main(String[] args) {
-      if(parsed)parseParams(args);
+      if(!parsed)parseParams(args);
       
       MP3tagger mP3tagger = new MP3tagger();
       
       switch(command){          
           case COMMAND_TAG:
-              ArrayList<File> dirs = new ArrayList<>();
-              dirs.add(file);
-              mP3tagger.iterate(dirs);
+              mP3tagger.iterate(file);
               break;
           case COMMAND_REMOVE:
               mP3tagger.rm();
@@ -96,27 +91,33 @@ public class MP3tagger {
     }
 
     Mp3File mp3File;
-    ID3v1 id3v1Tag;
-    private void iterate(ArrayList<File> dirs) {
+    ID3v2 id3v2Tag;
+    private void iterate(File dir) {
         
         
-        for(File f : dirs.get(dirs.size()-1).listFiles()){ //parent directory
+        for(File f : dir.listFiles()){ //parent directory
             if(f.isDirectory()){                           //children's directories
-                dirs.add(f);
-                iterate(dirs);
+                iterate(f);
             }else if(f.toString().endsWith(".mp3")){
                 try {
-                    mp3File = new Mp3File(f.getAbsolutePath());                                       
-                    if (mp3File.hasId3v1Tag()) {
-                        id3v1Tag =  mp3File.getId3v1Tag();
+                    String path = f.getAbsolutePath();
+                    mp3File = new Mp3File(path);                                       
+                    if (mp3File.hasId3v2Tag()) {
+                        id3v2Tag = mp3File.getId3v2Tag();
                     } else {
-                        id3v1Tag = new ID3v1Tag();
-                        mp3File.setId3v1Tag(id3v1Tag);
+                    // mp3 does not have an ID3v2 tag, let's create one..
+                        id3v2Tag = new ID3v24Tag();
+                        mp3File.setId3v2Tag(id3v2Tag);
                     }
-                    if(mode.contains(MODE_ARTIST) && dirs.size() >= 2)id3v1Tag.setArtist(dirs.get(1).getName());
-                    if(mode.contains(MODE_ALBUM) && dirs.size() >= 3)id3v1Tag.setAlbum(dirs.get(2).getName());
-                    if(mode.contains(MODE_TITLE) && dirs.size() >= 4)id3v1Tag.setArtist(dirs.get(3).getName().split(".")[0]);
-                    mp3File.save(f.getAbsolutePath());
+                    String[] paths = f.getAbsolutePath().split("\\\\");
+                    if(mode.contains(MODE_ARTIST))id3v2Tag.setArtist(paths[paths.length-3]);
+                    if(mode.contains(MODE_ALBUM))id3v2Tag.setAlbum(paths[paths.length-2]);
+                    if(mode.contains(MODE_TITLE))id3v2Tag.setTitle(paths[paths.length-1].split(".mp3")[0]);
+                    mp3File.save(path + ".new");
+                    f.delete();
+                    f = new File(path + ".new");
+                    f.renameTo(new File(path));
+                    System.out.println(f);
 
                 } catch (Exception ex) {
                     ex.printStackTrace();
