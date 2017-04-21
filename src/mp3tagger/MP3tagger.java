@@ -92,6 +92,7 @@ public class MP3tagger {
 
     Mp3File mp3File;
     ID3v2 id3v2Tag;
+    ID3v1 id3v1Tag;
     private void iterate(File dir) {
         
         
@@ -108,17 +109,35 @@ public class MP3tagger {
                     // mp3 does not have an ID3v2 tag, let's create one..
                         id3v2Tag = new ID3v24Tag();
                         mp3File.setId3v2Tag(id3v2Tag);
+                    
                     }
+                    
+                    if (mp3File.hasId3v1Tag()) {
+                        id3v1Tag = mp3File.getId3v2Tag();
+                    } else {
+                    // mp3 does not have an ID3v1 tag, let's create one..
+                        id3v1Tag = new ID3v1Tag();
+                        mp3File.setId3v1Tag(id3v1Tag);
+                    }
+                    
                     String[] paths = f.getAbsolutePath().split("\\\\");
                     System.out.println(id3v2Tag.getArtist());
-                    if(mode.contains(MODE_ARTIST) && id3v2Tag.getArtist() == null)id3v2Tag.setArtist(paths[paths.length-3]);
-                    if(mode.contains(MODE_ALBUM)  && id3v2Tag.getAlbum() == null)id3v2Tag.setAlbum(paths[paths.length-2]);
-                    if(mode.contains(MODE_TITLE) && id3v2Tag.getTitle() == null)id3v2Tag.setTitle(paths[paths.length-1].split(".mp3")[0]);
+                    if(mode.contains(MODE_ARTIST)){
+                        id3v2Tag.setArtist(paths[paths.length-3]);
+                        id3v1Tag.setArtist(paths[paths.length-3]);
+                    }
+                    if(mode.contains(MODE_ALBUM)){
+                        id3v2Tag.setAlbum(paths[paths.length-2]);
+                        id3v2Tag.setAlbum(paths[paths.length-2]);
+                    }
+                    if(mode.contains(MODE_TITLE)){
+                        id3v2Tag.setTitle(paths[paths.length-1].split(".mp3")[0]);
+                        id3v2Tag.setAlbum(paths[paths.length-2]);
+                    }
                     mp3File.save(path + ".new");
                     f.delete();
                     f = new File(path + ".new");
                     f.renameTo(new File(path));
-                    System.out.println(f);
 
                 } catch (Exception ex) {
                     ex.printStackTrace();
